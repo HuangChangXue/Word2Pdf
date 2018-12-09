@@ -1,0 +1,86 @@
+package org.hcx.tools.poi.tool.formater;
+
+import org.hcx.tools.poi.tool.number.NumberFormater;
+
+public class ChineseLegalNumberFormater implements NumberFormater {
+
+	public
+	String getChar(int number) {
+	return ToCH(number);
+	}
+
+
+	public static String ToCH(int intInput) {
+		String si = String.valueOf(intInput);
+		String sd = "";
+		if (si.length() == 1) // 个
+		{
+			sd += GetCH(intInput);
+			return sd;
+		} else if (si.length() == 2)// 十
+		{
+			if (si.substring(0, 1).equals("1"))
+				sd += "拾";
+			else
+				sd += (GetCH(intInput / 10) + "十");
+			sd += ToCH(intInput % 10);
+		} else if (si.length() == 3)// 百
+		{
+			sd += (GetCH(intInput / 100) + "佰");
+			if (String.valueOf(intInput % 100).length() < 2)
+				sd += "零";
+			sd += ToCH(intInput % 100);
+		} else if (si.length() == 4)// 千
+		{
+			sd += (GetCH(intInput / 1000) + "仟");
+			if (String.valueOf(intInput % 1000).length() < 3)
+				sd += "零";
+			sd += ToCH(intInput % 1000);
+		} else if (si.length() == 5)// 万
+		{
+			sd += (GetCH(intInput / 10000) + "萬");
+			if (String.valueOf(intInput % 10000).length() < 4)
+				sd += "零";
+			sd += ToCH(intInput % 10000);
+		}
+
+		return sd;
+	}
+
+	private static String GetCH(int input) {
+		String sd = "";
+		switch (input) {
+		case 1:
+			sd = "壹";
+			break;
+		case 2:
+			sd = "贰";
+			break;
+		case 3:
+			sd = "叁";
+			break;
+		case 4:
+			sd = "肆";
+			break;
+		case 5:
+			sd = "伍";
+			break;
+		case 6:
+			sd = "陆";
+			break;
+		case 7:
+			sd = "柒";
+			break;
+		case 8:
+			sd = "捌";
+			break;
+		case 9:
+			sd = "玖";
+			break;
+		default:
+			break;
+		}
+		return sd;
+	}
+
+}
