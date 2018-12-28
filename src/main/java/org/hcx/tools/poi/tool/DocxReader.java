@@ -29,6 +29,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTrPr;
 
 public class DocxReader implements NameAndAttrs {
 	private File docxfile = null;
@@ -66,7 +67,7 @@ public class DocxReader implements NameAndAttrs {
 				processParagraph((XWPFParagraph) element, root);
 			} else if (element instanceof XWPFTable) {
 				XWPFTable table = (XWPFTable) element;
-				processTable(table, root);
+				processTable(table, root); 
 			} else if (element instanceof XWPFSDT) {
 				XWPFSDT sdt = (XWPFSDT) element;
 				processSDT(sdt, root);
@@ -91,10 +92,17 @@ public class DocxReader implements NameAndAttrs {
 	private void processTableRow(XWPFTableRow row, org.dom4j.Element parent) {
 		org.dom4j.Element ce = parent.addElement(XMLNodeName.XMLROWNNAME);
 		List<ICell> cells = row.getTableICells();
+		appendRowAttrs(row,ce);
+		ce.addAttribute("cols", cells.size()+"");
 		for (int i = 0; i < cells.size(); i++) {
 			ICell cell = cells.get(i);
 			processCell(cell, ce);
 		}
+	}
+	private void appendRowAttrs(XWPFTableRow row,org.dom4j.Element e) {
+		e.addAttribute(Size.HEIGHT, row.getHeight()+"");
+//		CTTrPr cttrpr=row.getCtRow().getTrPr();
+
 	}
 
 	private void processCell(ICell cell, org.dom4j.Element parent) {
@@ -203,14 +211,27 @@ public class DocxReader implements NameAndAttrs {
 		org.dom4j.Element  rune=parent.addElement(XMLNodeName.XMLCHARANNAME);
 		appendRunAttr(xwpfRun,rune);
 	}
-	private void appendRunAttr(XWPFRun run,Element e) {
-		run.isBold();run.isCapitalized();run.isDoubleStrikeThrough();run.isEmbossed();
-		run.isHighlighted();run.getColor();run.getCharacterSpacing();run.getFontFamily();
-		run.getFontSize();run.getSubscript();run.getText(0);run.getTextPosition();run.getUnderline().name();
-		run.isImprinted();run.isItalic();run.isShadowed();
-		run.isSmallCaps();run.isStrike();run.isStrikeThrough();
+
+	private void appendRunAttr(XWPFRun run, Element e) {
+		e.addAttribute(Attribute.BOLD,run.isBold()+"");
+		e.addAttribute(Attribute.CAPITALIZED,run.isCapitalized()+"");
+		e.addAttribute(Attribute.DOUBLE_STRIKE_THROUGH,run.isDoubleStrikeThrough()+"");
+		e.addAttribute(Attribute.EMBOSSED,run.isEmbossed()+"");
+		e.addAttribute(Attribute.HIGHLIGHTED,run.isHighlighted()+"");
+		e.addAttribute(Attribute.COLOR,run.getColor()+"");
+		e.addAttribute(Attribute.ChARACTERSPACING,run.getCharacterSpacing()+"");
+		e.addAttribute(Attribute.FONTFAMILY,run.getFontFamily()+"");
+		e.addAttribute(Attribute.FONTSIZE,run.getFontSize()+"");
+		e.addAttribute(Attribute.SUBSCRIPT,run.getSubscript()+"");
+		e.addAttribute(Attribute.TEXTPOSITION,run.getTextPosition()+"");
+		e.addAttribute(Attribute.UNDERLINE,run.getUnderline().name()+"");
+		e.addAttribute(Attribute.IMPRINTED,run.isImprinted()+"");
+		e.addAttribute(Attribute.ITALIC,run.isItalic()+"");
+		e.addAttribute(Attribute.SHADOWED,run.isShadowed()+"");
+		e.addAttribute(Attribute.SMALLCAPS,run.isSmallCaps()+"");
+		e.addAttribute(Attribute.STRIKETHROUGH,run.isStrikeThrough()+"");
 		e.setText(run.text());
-		
+
 	}
 
 	public static void main(String[] args) throws Exception {
