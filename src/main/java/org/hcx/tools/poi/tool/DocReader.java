@@ -2,22 +2,16 @@ package org.hcx.tools.poi.tool;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.ddf.EscherRecord;
 import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.converter.WordToHtmlConverter;
 import org.apache.poi.hwpf.model.Colorref;
-import org.apache.poi.hwpf.model.Ffn;
 import org.apache.poi.hwpf.model.FontTable;
 import org.apache.poi.hwpf.model.ListTables;
 import org.apache.poi.hwpf.model.PicturesTable;
@@ -29,19 +23,15 @@ import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.HWPFList;
 import org.apache.poi.hwpf.usermodel.ObjectsPool;
 import org.apache.poi.hwpf.usermodel.OfficeDrawing;
-import org.apache.poi.hwpf.usermodel.OfficeDrawings;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.hwpf.usermodel.Section;
 import org.apache.poi.hwpf.usermodel.Table;
 import org.apache.poi.hwpf.usermodel.TableCell;
-import org.apache.poi.hwpf.usermodel.TableIterator;
 import org.apache.poi.hwpf.usermodel.TableRow;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
-import org.hcx.tools.poi.tool.NameAndAttrs.Size;
-import org.hcx.tools.poi.tool.NameAndAttrs.XMLNodeName;
 import org.hcx.tools.poi.tool.number.NumberFormatTool;
 
 public class DocReader implements NameAndAttrs {
