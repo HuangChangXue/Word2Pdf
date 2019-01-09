@@ -32,6 +32,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRow;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSpacing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTc;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcBorders;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
@@ -94,7 +95,7 @@ public class DocxReader implements NameAndAttrs {
 		int rowcnt = table.getNumberOfRows();
 		for (int i = 0; i < rowcnt; i++) {
 			XWPFTableRow row = table.getRow(i);
-			System.out.println("Row"+i);
+			System.out.println("Row" + i);
 			processTableRow(row, te);
 		}
 	}
@@ -106,16 +107,16 @@ public class DocxReader implements NameAndAttrs {
 		ce.addAttribute("cols", cells.size() + "");
 		for (int i = 0; i < cells.size(); i++) {
 			ICell cell = cells.get(i);
-			System.out.println(" Cell"+i);
+			System.out.println(" Cell" + i);
 			processCell(cell, ce);
 		}
 	}
 
 	private void appendRowAttrs(XWPFTableRow row, org.dom4j.Element e) {
 		e.addAttribute(Size.HEIGHT, row.getHeight() + "");
-//		CTRow ctRow=row.getCtRow();
-//		CTTrPr cttrpr = ctRow.getTrPr();
-//		System.out.println(cttrpr);
+		// CTRow ctRow=row.getCtRow();
+		// CTTrPr cttrpr = ctRow.getTrPr();
+		// System.out.println(cttrpr);
 	}
 
 	private void processCell(ICell cell, org.dom4j.Element parent) {
@@ -141,19 +142,17 @@ public class DocxReader implements NameAndAttrs {
 		}
 		CTHMerge hmerge = cttcpr.getHMerge();
 		if (hmerge != null) {
-			if(hmerge.isSetVal()) {
+			if (hmerge.isSetVal()) {
 				cellE.addAttribute("hmerge", hmerge.getVal().toString());
-			}
-			else {
+			} else {
 				cellE.addAttribute("hmerge", "");
 			}
 		}
 		CTVMerge vmerge = cttcpr.getVMerge();
 		if (vmerge != null) {
-			if(vmerge.isSetVal()) {
+			if (vmerge.isSetVal()) {
 				cellE.addAttribute("vmerge", vmerge.getVal().toString());
-			}
-			else {
+			} else {
 				cellE.addAttribute("vmerge", "");
 			}
 		}
@@ -205,7 +204,10 @@ public class DocxReader implements NameAndAttrs {
 		e.addAttribute(Attribute.INDENT_TOP, "" + para.getSpacingBefore());
 		e.addAttribute(Attribute.INDENT_BOTTOM, "" + para.getSpacingAfter());
 		e.addAttribute(Attribute.SPACE_BETWEEN_LINES, "" + para.getSpacingBetween());
-		// CTPPr pr = para.getCTP().getPPr();
+		
+		CTPPr pr = para.getCTP().getPPr();
+		if(pr!=null) {
+		}
 
 	}
 
@@ -229,6 +231,7 @@ public class DocxReader implements NameAndAttrs {
 				}
 			} catch (Exception e) {
 			}
+
 		}
 
 		List<IRunElement> runs = para.getIRuns();
@@ -296,13 +299,10 @@ public class DocxReader implements NameAndAttrs {
 		File f = new File("./src/word2.docx");
 		org.dom4j.Document document = new DocxReader(f).processDocument();
 		org.dom4j.io.OutputFormat format = org.dom4j.io.OutputFormat.createPrettyPrint();
-
 		format.setEncoding("utf-8");
 		java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream();
 		org.dom4j.io.XMLWriter writer = new org.dom4j.io.XMLWriter(os, format);
-
 		writer.write(document);
-
 		writer.flush();
 		System.out.println(os.toString("utf-8"));
 	}

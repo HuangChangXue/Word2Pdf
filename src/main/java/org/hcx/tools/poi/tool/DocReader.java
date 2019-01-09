@@ -35,8 +35,8 @@ import org.dom4j.DocumentHelper;
 import org.hcx.tools.poi.tool.number.NumberFormatTool;
 
 public class DocReader implements NameAndAttrs {
-	
-	private Map<Integer, int[]>	listValues			= new HashMap<Integer, int[]>();
+
+	private Map<Integer, int[]> listValues = new HashMap<Integer, int[]>();
 
 	private int[] getListValue(int list) {
 		int[] ret = null;
@@ -457,7 +457,7 @@ public class DocReader implements NameAndAttrs {
 		}
 		if (isCreateNewPage) {
 			parent.addElement(XMLNodeName.XMLPAGEBREAK);
-			this.isCreateNewPage=false;
+			this.isCreateNewPage = false;
 		}
 	}
 
@@ -508,14 +508,13 @@ public class DocReader implements NameAndAttrs {
 		if (!crun.isSpecialCharacter()) {
 			// System.out.println(crun.getStartOffset() + " !spec ");
 			// if (!s.trim().isEmpty()) {
-			String text=crun.text();
-			if(text!=null&&text.charAt(0)=='\f') {
-				this.isCreateNewPage=true;
-			}
-			else {
-			org.dom4j.Element element = parent.addElement(XMLNodeName.XMLCHARANNAME);
-			appendCharacterRunAttributes(crun, element);
-			element.setText(crun.text());
+			String text = crun.text();
+			if (text != null && text.charAt(0) == '\f') {
+				this.isCreateNewPage = true;
+			} else {
+				org.dom4j.Element element = parent.addElement(XMLNodeName.XMLCHARANNAME);
+				appendCharacterRunAttributes(crun, element);
+				element.setText(crun.text());
 			}
 			// }
 		} else {
@@ -628,7 +627,7 @@ public class DocReader implements NameAndAttrs {
 			element.addAttribute("justification", justification + "");
 			element.addAttribute("space-before", para.getSpacingBefore() + "");
 			element.addAttribute("space-after", para.getSpacingAfter() + "");
-			element.addAttribute("lineSpace", para.getLineSpacing().toInt() + "");
+			element.addAttribute("lineSpace", para.getLineSpacing().toString() + "");
 
 		}
 	}
