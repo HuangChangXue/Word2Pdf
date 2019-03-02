@@ -2,22 +2,16 @@ package org.hcx.tools.poi.tool;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.ddf.EscherRecord;
 import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.converter.WordToHtmlConverter;
 import org.apache.poi.hwpf.model.Colorref;
-import org.apache.poi.hwpf.model.Ffn;
 import org.apache.poi.hwpf.model.FontTable;
 import org.apache.poi.hwpf.model.ListTables;
 import org.apache.poi.hwpf.model.PicturesTable;
@@ -29,31 +23,20 @@ import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.HWPFList;
 import org.apache.poi.hwpf.usermodel.ObjectsPool;
 import org.apache.poi.hwpf.usermodel.OfficeDrawing;
-import org.apache.poi.hwpf.usermodel.OfficeDrawings;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.hwpf.usermodel.Section;
 import org.apache.poi.hwpf.usermodel.Table;
 import org.apache.poi.hwpf.usermodel.TableCell;
-import org.apache.poi.hwpf.usermodel.TableIterator;
 import org.apache.poi.hwpf.usermodel.TableRow;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.hcx.tools.poi.tool.number.NumberFormatTool;
 
-public class DocReader {
-	private static final String	XMLROOTNAME			= "root";
-	private static final String	XMLSECTIONNAME		= "section";
-	private static final String	XMLPARANNAME		= "para";
-	private static final String	XMLTABLENNAME		= "table";
-	private static final String	XMLROWNNAME			= "row";
-	private static final String	XMLCOLNNAME			= "col";
-	private static final String	XMLCHARANNAME		= "char";
-	private static final String	XMLPICANNAME		= "pic";
-	private static final String	XMLSHSAPENAME		= "shape";
-	private static final String	XMLCONTAINERNAME	= "container";
-	private Map<Integer, int[]>	listValues			= new HashMap<Integer, int[]>();
+public class DocReader implements NameAndAttrs {
+
+	private Map<Integer, int[]> listValues = new HashMap<Integer, int[]>();
 
 	private int[] getListValue(int list) {
 		int[] ret = null;
@@ -200,8 +183,8 @@ public class DocReader {
 		// for (OfficeDrawing draw : doc.getOfficeDrawingsMain().getOfficeDrawings()) {
 		// System.out.println(draw);
 		// }
-		org.dom4j.Element root = document.addElement(XMLROOTNAME);
-		
+		org.dom4j.Element root = document.addElement(XMLNodeName.XMLROOTNAME);
+
 		addMetaData(root);
 		int secCnt = range.numSections();
 		for (int i = 0; i < secCnt; ++i) {
@@ -221,22 +204,22 @@ public class DocReader {
 		if (paraCnt <= 0) {
 			return;
 		}
-		element = parent.addElement(XMLSECTIONNAME);
+		element = parent.addElement(XMLNodeName.XMLSECTIONNAME);
 		if (appendAttr) {
 			int marginLeft = sec.getMarginLeft(), marginRight = sec.getMarginRight(), marginTop = sec.getMarginTop(),
 					marginButtom = sec.getMarginBottom(), columCnt = sec.getNumColumns(),
 					columSpace = sec.getDistanceBetweenColumns(), pageHight = sec.getPageHeight(),
 					pageWidth = sec.getPageWidth();
-		boolean colEvenlySpaced=	sec.isColumnsEvenlySpaced();
-			element.addAttribute("margin-left", marginLeft + "");
-			element.addAttribute("margin-right", marginRight + "");
-			element.addAttribute("margin-top", marginTop + "");
-			element.addAttribute("margin-bottom", marginButtom + "");
-			element.addAttribute("colum-count", columCnt + "");
-			element.addAttribute("colum-dist", columSpace + "");
-			element.addAttribute("pageWidth", pageWidth + "");
-			element.addAttribute("pageHeight", pageHight + "");
-			element.addAttribute("colEvenlySpaced", colEvenlySpaced+"");
+			boolean colEvenlySpaced = sec.isColumnsEvenlySpaced();
+			element.addAttribute(Attribute.INDENT_LEFT, marginLeft + "");
+			element.addAttribute(Attribute.INDENT_RIGHT, marginRight + "");
+			element.addAttribute(Attribute.INDENT_TOP, marginTop + "");
+			element.addAttribute(Attribute.INDENT_BOTTOM, marginButtom + "");
+			element.addAttribute(Attribute.COLUMN_CNT, columCnt + "");
+			element.addAttribute(Attribute.COLUMN_DIST, columSpace + "");
+			element.addAttribute(Size.WIDTH, pageWidth + "");
+			element.addAttribute(Size.HEIGHT, pageHight + "");
+			element.addAttribute("colEvenlySpaced", colEvenlySpaced + "");
 		}
 		for (int i = 0; i < paraCnt; i = sectionParaCnt()) {
 			Paragraph para = sec.getParagraph(i);
@@ -248,11 +231,11 @@ public class DocReader {
 	private void processTable(Table table, org.dom4j.Element parent) {
 		this.pushTable(table);
 		int rowNum = table.numRows();
-		org.dom4j.Element ele = parent.addElement(XMLTABLENNAME);
+		org.dom4j.Element ele = parent.addElement(XMLNodeName.XMLTABLENNAME);
 
 		for (int i = 0; i < rowNum; ++i) {
 			TableRow row = table.getRow(i);
-			org.dom4j.Element rowE = ele.addElement(XMLROWNNAME);
+			org.dom4j.Element rowE = ele.addElement(XMLNodeName.XMLROWNNAME);
 			int colCnt = row.numCells();
 			StringBuilder colWidth = new StringBuilder();
 			for (int j = 0; j < colCnt; ++j) {
@@ -260,10 +243,10 @@ public class DocReader {
 				if (this.appendAttr) {
 					colWidth.append(cell.getWidth()).append(",");
 					if (j == colCnt - 1) {
-						rowE.addAttribute("cellSizes", colWidth.toString());
+						rowE.addAttribute(Attribute.CELL_WIDTH, colWidth.toString());
 					}
 				}
-				org.dom4j.Element cellE = rowE.addElement(XMLCOLNNAME);
+				org.dom4j.Element cellE = rowE.addElement(XMLNodeName.XMLCOLNNAME);
 				int secNum = cell.numSections();
 				// 处理单元格内的段落
 				for (int m = 0; m < secNum; ++m) {
@@ -290,14 +273,14 @@ public class DocReader {
 			appendRowAttrs(row, rowE);
 		}
 		appendTableAttrs(table, ele);
-		 PoiUtil.createTableLayout(ele);
+		PoiUtil.createTableLayout(ele);
 		this.popTable();
 	}
 
 	private void appendCellAttrs(TableCell cell, org.dom4j.Element cellE) {
 		if (this.appendAttr) {
 
-			cellE.addAttribute("width", cell.getWidth() + "");
+			cellE.addAttribute(Size.WIDTH, cell.getWidth() + "");
 			boolean isMerged = cell.isMerged();
 			cellE.addAttribute("merged", isMerged + "");
 			boolean isfirstMerged = cell.isFirstMerged();
@@ -312,10 +295,10 @@ public class DocReader {
 			BorderCode bottomborder = cell.getBrcBottom();
 			BorderCode leftborder = cell.getBrcLeft();
 			BorderCode rightborder = cell.getBrcRight();
-			appendBorderInfo("top", topborder, cellE);
-			appendBorderInfo("bottom", bottomborder, cellE);
-			appendBorderInfo("left", leftborder, cellE);
-			appendBorderInfo("right", rightborder, cellE);
+			appendBorderInfo(Location.LOC_TOP, topborder, cellE);
+			appendBorderInfo(Location.LOC_BOTTOM, bottomborder, cellE);
+			appendBorderInfo(Location.LOC_LEFT, leftborder, cellE);
+			appendBorderInfo(Location.LOC_RIGHT, rightborder, cellE);
 
 		}
 	}
@@ -333,10 +316,10 @@ public class DocReader {
 			BorderCode bottomborder = row.getBottomBorder();
 			BorderCode leftborder = row.getLeftBorder();
 			BorderCode rightborder = row.getRightBorder();
-			appendBorderInfo("top", topborder, rowE);
-			appendBorderInfo("bottom", bottomborder, rowE);
-			appendBorderInfo("left", leftborder, rowE);
-			appendBorderInfo("right", rightborder, rowE);
+			appendBorderInfo(Location.LOC_TOP, topborder, rowE);
+			appendBorderInfo(Location.LOC_BOTTOM, bottomborder, rowE);
+			appendBorderInfo(Location.LOC_LEFT, leftborder, rowE);
+			appendBorderInfo(Location.LOC_RIGHT, rightborder, rowE);
 
 		}
 	}
@@ -364,7 +347,7 @@ public class DocReader {
 	private void processList(Paragraph para, org.dom4j.Element parent) {
 		this.addParaCnt();
 
-		org.dom4j.Element paraE = parent.addElement(XMLPARANNAME);
+		org.dom4j.Element paraE = parent.addElement(XMLNodeName.XMLPARANNAME);
 		this.appendParaAttribute(para, paraE);
 		parseListNumberPart(para, paraE);
 		int secNum = para.numCharacterRuns();
@@ -381,7 +364,7 @@ public class DocReader {
 		int ilfo = para.getIlfo();
 		int format = list.getNumberFormat((char) ilvl);
 		String numText = list.getNumberText((char) ilvl);
-		org.dom4j.Element ele = parent.addElement(XMLCHARANNAME);
+		org.dom4j.Element ele = parent.addElement(XMLNodeName.XMLCHARANNAME);
 		this.appendCharacterRunAttributes(para.getCharacterRun(0), ele);
 		int[] values = this.getListValue(ilfo);
 		values[ilvl]++;
@@ -415,13 +398,16 @@ public class DocReader {
 
 	private void processParagraph(Paragraph para, org.dom4j.Element parent) {
 
+		if (para.pageBreakBefore()) {
+			parent.addElement(XMLNodeName.XMLPAGEBREAK);
+		}
 		org.dom4j.Element element = null;
 		if (para.isInTable()) {
 
 			this.addParaCnt();
 			try {
 				Table table = this.currentSection().getTable(para);
-				element = parent.addElement(XMLPARANNAME);
+				element = parent.addElement(XMLNodeName.XMLPARANNAME);
 				if (this.currentTable() != null) {
 					if (table.getTableLevel() != this.currentTable().getTableLevel()) {// 子表
 						this.processTable(table, element);
@@ -440,7 +426,7 @@ public class DocReader {
 				if (para.isInList()) {
 					this.processList(para, parent);
 				} else {
-					element = parent.addElement(XMLPARANNAME);
+					element = parent.addElement(XMLNodeName.XMLPARANNAME);
 					int numCharaRun = para.numCharacterRuns();
 					for (int i = 0; i < numCharaRun; ++i) {
 						CharacterRun cr = para.getCharacterRun(i);
@@ -453,7 +439,7 @@ public class DocReader {
 			processList(para, parent);
 		} else {
 			this.addParaCnt();
-			element = parent.addElement(XMLPARANNAME);
+			element = parent.addElement(XMLNodeName.XMLPARANNAME);
 			int numCharaRun = para.numCharacterRuns();
 			for (int i = 0; i < numCharaRun; ++i) {
 				CharacterRun cr = para.getCharacterRun(i);
@@ -469,14 +455,19 @@ public class DocReader {
 			appendParaAttribute(para, element);
 			// }
 		}
-
+		if (isCreateNewPage) {
+			parent.addElement(XMLNodeName.XMLPAGEBREAK);
+			this.isCreateNewPage = false;
+		}
 	}
+
+	boolean isCreateNewPage = false;
 
 	private void appendPictureAttributes(Picture pic, org.dom4j.Element e) {
 		if (this.appendAttr) {
 			int w = pic.getWidth(), h = pic.getHeight();
-			e.addAttribute("picWidth", w + "");
-			e.addAttribute("picHeight", h + "");
+			e.addAttribute(Size.WIDTH, w + "");
+			e.addAttribute(Size.HEIGHT, h + "");
 			e.addAttribute("hScale", pic.getHorizontalScalingFactor() + "");
 			e.addAttribute("vScale", pic.getVerticalScalingFactor() + "");
 		}
@@ -496,7 +487,7 @@ public class DocReader {
 					os = new java.io.FileOutputStream(outFile);
 					pic.writeImageContent(os);
 					os.close();
-					org.dom4j.Element element = parent.addElement(XMLPICANNAME);
+					org.dom4j.Element element = parent.addElement(XMLNodeName.XMLPICANNAME);
 					element.addAttribute("src", outFile.getAbsolutePath());
 					appendPictureAttributes(pic, element);
 					appendCharacterRunAttributes(crun, element);
@@ -516,11 +507,16 @@ public class DocReader {
 
 		if (!crun.isSpecialCharacter()) {
 			// System.out.println(crun.getStartOffset() + " !spec ");
-//			if (!s.trim().isEmpty()) {
-				org.dom4j.Element element = parent.addElement(XMLCHARANNAME);
+			// if (!s.trim().isEmpty()) {
+			String text = crun.text();
+			if (text != null && text.charAt(0) == '\f') {
+				this.isCreateNewPage = true;
+			} else {
+				org.dom4j.Element element = parent.addElement(XMLNodeName.XMLCHARANNAME);
 				appendCharacterRunAttributes(crun, element);
 				element.setText(crun.text());
-//			}
+			}
+			// }
 		} else {
 
 			org.dom4j.Element element = null;
@@ -534,33 +530,33 @@ public class DocReader {
 				if (drawing != null) {
 					System.out.println(drawing);
 					org.apache.poi.ddf.EscherContainerRecord containerRecord = drawing.getOfficeArtSpContainer();
-						element = parent.addElement(XMLCONTAINERNAME);
-						String containeXml = containerRecord.toXml("");
-						try {
-							org.dom4j.Element tmp = DocumentHelper.parseText(containeXml).getRootElement();
-							tmp.detach();
-							element.add(tmp);
-						} catch (DocumentException e) {
-							e.printStackTrace();
-						}
-						appendDrawingAttributes(drawing, element);
+					element = parent.addElement(XMLNodeName.XMLCONTAINERNAME);
+					String containeXml = containerRecord.toXml("");
+					try {
+						org.dom4j.Element tmp = DocumentHelper.parseText(containeXml).getRootElement();
+						tmp.detach();
+						element.add(tmp);
+					} catch (DocumentException e) {
+						e.printStackTrace();
+					}
+					appendDrawingAttributes(drawing, element);
 					// System.out.println(containerRecord);
 				} else {
 
 				}
 			} else if (s.charAt(0) == 0x13) {// FieldStart
-				element = parent.addElement(XMLCHARANNAME);
+				element = parent.addElement(XMLNodeName.XMLCHARANNAME);
 				element.addAttribute("type", "FieldStart");
 				element.addAttribute("skiped", "FieldNameCharacterRun");
 				ret++;
 			} else if (s.charAt(0) == 0x15) {// FieldEnd
-				element = parent.addElement(XMLCHARANNAME);
+				element = parent.addElement(XMLNodeName.XMLCHARANNAME);
 				element.addAttribute("type", "FieldEnd");
 			} else if (s.charAt(0) == 0x14) {// FieldEnd
-				element = parent.addElement(XMLCHARANNAME);
+				element = parent.addElement(XMLNodeName.XMLCHARANNAME);
 				element.addAttribute("type", "FIELD_SEPARATOR_MARK");
 			} else {
-				element = parent.addElement(XMLCHARANNAME);
+				element = parent.addElement(XMLNodeName.XMLCHARANNAME);
 				element.addAttribute("type", "unknown");
 			}
 			appendCharacterRunAttributes(crun, element);
@@ -631,18 +627,18 @@ public class DocReader {
 			element.addAttribute("justification", justification + "");
 			element.addAttribute("space-before", para.getSpacingBefore() + "");
 			element.addAttribute("space-after", para.getSpacingAfter() + "");
-			element.addAttribute("lineSpace", para.getLineSpacing().toInt()+"");
-			
+			element.addAttribute("lineSpace", para.getLineSpacing().toString() + "");
+
 		}
 	}
 
 	public static void main(String args[]) throws Exception {
 		String path = "src/格式.doc";
 		// path="F:\\兴业相关业务数据\\兴业-交易银行部\\附加文件_附件1：兴业银行特约商户条码支付服务协议（以此为准）.doc";
-//		path = "src/shape.doc";
+		// path = "src/shape.doc";
 		File file = new File(path);
 		DocReader reader = new DocReader(file);
-//		 reader.open();
+		// reader.open();
 		org.dom4j.Document document = reader.processDocument();
 		reader.close();
 		org.dom4j.io.OutputFormat format = org.dom4j.io.OutputFormat.createPrettyPrint();
